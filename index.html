@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cheque Checker</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background: #f2f5fb;
+    color: #172033;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    padding: 40px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.08);
+}
+
+.logo {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #315efb;
+    color: white;
+    border-radius: 14px;
+    font-size: 28px;
+    margin-bottom: 25px;
+}
+
+.subtitle {
+    color: #315efb;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+h1 {
+    font-size: 36px;
+    margin: 10px 0;
+}
+
+.description {
+    color: #687386;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+}
+
+input {
+    flex: 1;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #dce1e9;
+    border-radius: 10px;
+    font-size: 16px;
+    text-transform: uppercase;
+    outline: none;
+}
+
+input:focus {
+    border-color: #315efb;
+}
+
+button {
+    padding: 15px 22px;
+    border: none;
+    border-radius: 10px;
+    background: #315efb;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #2449d8;
+}
+
+.hint {
+    color: #8791a2;
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+.result {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 12px;
+    background: #f7f9ff;
+    border: 1px solid #e1e6f0;
+    display: none;
+}
+
+.result.success {
+    background: #f2fbf5;
+    border-color: #bde5cc;
+}
+
+.result.error {
+    background: #fff5f5;
+    border-color: #f0caca;
+}
+
+.result h2 {
+    font-size: 18px;
+    margin-top: 0;
+}
+
+.info-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #e1e6f0;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #687386;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    font-weight: bold;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.footer {
+    text-align: center;
+    color: #929bad;
+    font-size: 12px;
+    margin-top: 30px;
+}
+
+@media (max-width: 500px) {
+    .container {
+        padding: 25px;
+    }
+
+    h1 {
+        font-size: 29px;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">⌕</div>
+
+    <div class="subtitle">QUICK RECORD SEARCH</div>
+
+    <h1>Information Lookup</h1>
+
+    <p class="description">
+        Enter your reference code below to find its information.
+    </p>
+
+    <form id="lookupForm">
+
+        <label for="code">Reference Code</label>
+
+        <div class="input-group">
+
+            <input
+                type="text"
+                id="code"
+                placeholder="e.g. ABC123"
+                autocomplete="off"
+                maxlength="40"
+                required
+            >
+
+            <button type="submit">
+                Search →
+            </button>
+
+        </div>
+
+        <p class="hint">
+            Enter the letters and numbers of your reference code.
+        </p>
+
+    </form>
+
+    <div id="result" class="result"></div>
+
+    <div class="footer">
+        Information Lookup
+    </div>
+
+</div>
+
+<script>
+
+// =====================================
+// ADD YOUR INFORMATION HERE
+// =====================================
+
+const records = [
+
+    {
+        code: "ABC123",
+
+        info: {
+            "Title": "Example Record",
+            "Description": "This is sample information.",
+            "Status": "Active",
+            "Category": "Example"
+        }
+    },
+
+    {
+        code: "ZX9012",
+
+        info: {
+            "Title": "Second Example",
+            "Description": "This is another example record.",
+            "Status": "Pending",
+            "Category": "Other"
+        }
+    },
+
+    {
+        code: "ROOM501",
+
+        info: {
+            "Room": "501",
+            "Building": "Main Building",
+            "Status": "Available"
+        }
+    }
+
+];
+
+// =====================================
+// SEARCH SYSTEM
+// =====================================
+
+const form = document.getElementById("lookupForm");
+const input = document.getElementById("code");
+const result = document.getElementById("result");
+
+function showError(title, message) {
+
+    result.className = "result error";
+    result.style.display = "block";
+
+    result.replaceChildren();
+
+    const heading = document.createElement("h2");
+    heading.textContent = title;
+
+    const paragraph = document.createElement("p");
+    paragraph.textContent = message;
+
+    result.append(heading, paragraph);
+}
+
+function showRecord(record, code) {
+
+    result.className = "result success";
+    result.style.display = "block";
+
+    result.replaceChildren();
+
+    const heading = document.createElement("h2");
+    heading.textContent = "Information Found";
+
+    const codeText = document.createElement("p");
+    codeText.textContent = "Code: " + code;
+
+    result.append(heading, codeText);
+
+    for (const [label, value] of Object.entries(record.info)) {
+
+        const item = document.createElement("div");
+        item.className = "info-item";
+
+        const title = document.createElement("div");
+        title.className = "info-label";
+        title.textContent = label;
+
+        const content = document.createElement("div");
+        content.className = "info-value";
+        content.textContent = value;
+
+        item.append(title, content);
+
+        result.append(item);
+    }
+}
+
+form.addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    const enteredCode = input.value
+        .trim()
+        .replace(/\s+/g, "")
+        .toUpperCase();
+
+    if (!enteredCode) {
+
+        showError(
+            "Enter a code",
+            "Please enter a reference code."
+        );
+
+        return;
+    }
+
+    if (!/^[A-Z0-9-]+$/.test(enteredCode)) {
+
+        showError(
+            "Invalid Code",
+            "Only letters, numbers, and hyphens are allowed."
+        );
+
+        return;
+    }
+
+    const found = records.find(function(record) {
+
+        return record.code.toUpperCase() === enteredCode;
+
+    });
+
+    if (found) {
+
+        showRecord(found, enteredCode);
+
+    } else {
+
+        showError(
+            "Information Not Found",
+            "The code you entered does not exist. Please check and try again."
+        );
+
+    }
+
+});
+
+input.addEventListener("input", function() {
+
+    result.style.display = "none";
+
+});
+
+</script>
+
+</body>
+</html>
